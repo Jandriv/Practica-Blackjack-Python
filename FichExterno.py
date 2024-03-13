@@ -13,14 +13,14 @@ class CartaBase(object):
     """ Clase minimalista que representa una carta de la baraja
         Debería crearse una clase que herede de esta
     """
-    def __init__(self, ind: int) -> None:
+    def __init__(self, ind):
         """ Crea la carta con ese índice (0-51)
         :param ind: El índice de la carta
         """
         self.ind = ind
 
     @property
-    def valor(self) -> int:
+    def valor(self):
         """
         :return: Valor facial de la carta (1-10). Los ases devuelven 1.
         """
@@ -33,18 +33,18 @@ class Estrategia(object):
     """
     # Matrices de estrategia: Filas suma de valores de cartas del jugador (ases = 1), columnas valor carta del croupier
     # Matriz para jugadas con 2 cartas del mismo valor (inicio fila 2)
-    MATD: list[str] = ['S' * 10, *['P' + 'S' * 6 + 'PPP'] * 2, 'P' * 4 + 'SS' + 'P' * 4, 'P' + 'D' * 8 + 'P',
-                       'P' + 'S' * 6 + 'PPP', 'P' + 'S' * 7 + 'PP', 'S' * 10, 'C' + 'S' * 5 + 'CSSC', 'C' * 10]
+    MATD = ['S' * 10, *['P' + 'S' * 6 + 'PPP'] * 2, 'P' * 4 + 'SS' + 'P' * 4, 'P' + 'D' * 8 + 'P',
+            'P' + 'S' * 6 + 'PPP', 'P' + 'S' * 7 + 'PP', 'S' * 10, 'C' + 'S' * 5 + 'CSSC', 'C' * 10]
     # Matriz para jugadas con algún as (inicio fila 3, suma debe dividirse por 2)
-    MATA: list[str] = [*['P' * 4 + 'DD' + 'P' * 4] * 2, *['PPPDDD' + 'P' * 4] * 2, 'PP' + 'D' * 4 + 'P' * 4,
-                       'PC' + 'D' * 4 + 'CCPP', *['C' * 10] * 3]
+    MATA = [*['P' * 4 + 'DD' + 'P' * 4] * 2, *['PPPDDD' + 'P' * 4] * 2, 'PP' + 'D' * 4 + 'P' * 4,
+            'PC' + 'D' * 4 + 'CCPP', *['C' * 10] * 3]
     # Matriz para jugadas sin ases ni duplicados (inicio fila 4)
-    MATN: list[str] = [*['P' * 10] * 5, 'P' + 'D' * 5 + 'P' * 4, 'P' + 'D' * 8 + 'P', 'D' * 10,
-                       'P' * 3 + 'C' * 3 + 'P' * 4, *['P' + 'C' * 5 + 'P' * 4] * 4, *['C' * 10] * 5]
+    MATN = [*['P' * 10] * 5, 'P' + 'D' * 5 + 'P' * 4, 'P' + 'D' * 8 + 'P', 'D' * 10,
+            'P' * 3 + 'C' * 3 + 'P' * 4, *['P' + 'C' * 5 + 'P' * 4] * 4, *['C' * 10] * 5]
     # Vector de estrategia de conteo
-    CONT: list[int] = [-2, 2, 2, 2, 3, 2, 1, 0, -1, -2]
+    CONT = [-2, 2, 2, 2, 3, 2, 1, 0, -1, -2]
 
-    def __init__(self, num_barajas: int) -> None:
+    def __init__(self, num_barajas):
         """ Crea e inicializa la estrategia
         :param num_barajas: Número de barajas del mazo utilizado en el juego
         """
@@ -52,7 +52,7 @@ class Estrategia(object):
         self.num_cartas = 0
         self.cuenta = 0
 
-    def cuenta_carta(self, carta: CartaBase) -> None:
+    def cuenta_carta(self, carta):
         """ Este método se llama automáticamente por el objeto Mazo cada vez
             que se reparte una carta
         :param carta: La carta que se ha repartido
@@ -64,7 +64,7 @@ class Estrategia(object):
             self.cuenta = 0
         self.cuenta += Estrategia.CONT[carta.valor-1]
 
-    def apuesta(self, apu_lo: int, apu_med: int, apu_hi: int) -> int:
+    def apuesta(self, apu_lo, apu_med, apu_hi):
         """ Indica la apuesta que se debe realizar dado el estado del juego.
             Elige entre 3 valores posibles (baja, media y alta)
         :param apu_lo: El valor de la apuesta baja
@@ -81,7 +81,7 @@ class Estrategia(object):
         else:
             return apu_med
 
-    def jugada(self, croupier: CartaBase, jugador: list[CartaBase]) -> str:
+    def jugada(self, croupier, jugador):
         """ Indica la mejor opción dada la mano del croupier (que se supone que
             consta de una única carta) y la del jugador
         :param croupier: La carta del croupier
@@ -103,7 +103,7 @@ class Mazo(object):
     NUM_BARAJAS = 2
     SEMILLA = 260
 
-    def __init__(self, clase_carta: type[CartaBase], estrategia: Estrategia) -> None:
+    def __init__(self, clase_carta, estrategia):
         """ Crea un mazo y le asocia una estrategia
         :param clase_carta: La clase que representa las cartas
         :param estrategia: La estrategia asociada
@@ -113,7 +113,7 @@ class Mazo(object):
         self.cartas = []
         random.seed(Mazo.SEMILLA)
 
-    def reparte(self) -> CartaBase:
+    def reparte(self):
         """ Reparte una carta del mazo
             Llama al método cuenta_carta de la estrategia asociada
         :return: Un objeto carta de la clase indicada en el constructor
