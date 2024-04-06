@@ -1,9 +1,6 @@
-import FichExterno
+#Desarrollado por Javier De Castro
 
-"""a = FichExterno.CartaBase(9)
-    print(a.ind)
-    print(a.valor)
-    Ejemplo de como crear un objeto y enseñar los valores del objeto llamado a"""
+import FichExterno
 
 class Carta(FichExterno.CartaBase):
     def __init__(self, ind):
@@ -56,24 +53,51 @@ def main():
     NumPartida = 1
     SeguirJugando = "A"
     Balance = 0
+    PartidasParaAnalisis = 0
     Estrategia = FichExterno.Estrategia(FichExterno.Mazo.NUM_BARAJAS)
     Mazo = FichExterno.Mazo(Carta, Estrategia)
     print("BLACKJACK - PARADIGMAS DE PROGRAMACION 2023/2024")
-    ModoJuego = preguntaVariasOpciones("¿Modo de ejecucion? [J]uego [A]nalisis: ", "J", "A", "", "")
+    ModoAnalisis = preguntaVariasOpciones("¿Modo de ejecucion? [J]uego [A]nalisis: ", "J", "A", "", "")
+    if ModoAnalisis == "B":
+        ModoAnalisis = True
+        while PartidasParaAnalisis < 1:
+            print("¿Número de partidas?: ", end="")
+            Respuesta = input()
+            try:
+                PartidasParaAnalisis = int(Respuesta)
+            except ValueError:
+                print("La respuesta no es un numero válido")
+    else:
+        ModoAnalisis = False
+    
     while (SeguirJugando == "A"):
         print("")
         print("--- INICIO DE LA PARTIDA #" + str(NumPartida) + "--- BALANCE = " + str(Balance) + " €")
-        Apuesta = preguntaVariasOpciones("¿Apuesta? [2] [10] [50]: ", "2", "10", "50", "")
-        if Apuesta == "A":
-            Apuesta = 2
-        elif Apuesta == "B":
-            Apuesta = 10
-        elif Apuesta == "C":
-            Apuesta = 50
+        if ModoAnalisis == True:
+            print("¿Apuesta? [2] [10] [50]: ", end="")
+            Apuesta = Estrategia.apuesta(2,10,50)
+            print (str(Apuesta))
+        else:
+            Apuesta = preguntaVariasOpciones("¿Apuesta? [2] [10] [50]: ", "2", "10", "50", "")
+            if Apuesta == "A":
+                Apuesta = 2
+            elif Apuesta == "B":
+                Apuesta = 10
+            elif Apuesta == "C":
+                Apuesta = 50
         print("")
-        Balance += partida(Mazo, Apuesta)
-        SeguirJugando = preguntaVariasOpciones("¿Otra partida? [S/N]: ", "S", "N", "", "")
+        Balance += partida(Mazo, Apuesta, ModoAnalisis, Estrategia)
+        
         NumPartida += 1
+        if ModoAnalisis == True:
+            print("¿Otra partida? [S/N]: ", end="")
+            if NumPartida > PartidasParaAnalisis:
+                SeguirJugando = "B"
+                print("N")
+            else:
+                print("S")
+        else:
+            SeguirJugando = preguntaVariasOpciones("¿Otra partida? [S/N]: ", "S", "N", "", "")
     print("BALANCE FINAL: " + str(Balance) + "€")
     
     
@@ -92,8 +116,9 @@ def repartoInicial(Mazo: FichExterno.Mazo):
     return [EsBlackjack, ManoCroupier, ManoJugador]
 
     
-def partida(Mazo: FichExterno.Mazo, ApuestaInic):
+def partida(Mazo: FichExterno.Mazo, ApuestaInic: int, Analisis: bool, Estrategia: FichExterno.Estrategia):
     EstadoManos = ["ABIERTA"]
+    EstadoCroupier = ["ABIERTA"]
     ApuestaManos = [ApuestaInic]
     AlgunaManoAbierta = True
     CroupierTermino = False
@@ -103,7 +128,7 @@ def partida(Mazo: FichExterno.Mazo, ApuestaInic):
     EsBlackjack: bool = DatosRepartoinicial[0]
     ManoCroupier: list = DatosRepartoinicial[1]
     ManoInic: list = DatosRepartoinicial[2]
-    representacionManos([ManoCroupier], ["Croupier"], [], [])
+    representacionManos([ManoCroupier], ["Croupier"], EstadoCroupier, [])
     representacionManos([ManoInic], NombresManos, EstadoManos, ApuestaManos)
     if EsBlackjack == True:
         print("*****************")
@@ -114,21 +139,36 @@ def partida(Mazo: FichExterno.Mazo, ApuestaInic):
     else:
         ListaManos.append(ManoInic)
         print("TURNO DEL JUGADOR")
-        while AlgunaManoAbierta == True or CroupierTermino == False:
+        while AlgunaManoAbierta == True:
             
             i= 0
             ListaTemp = []
             for Mano in ListaManos:
                 if EstadoManos[i] == "ABIERTA":
-                    if sePuedePasarMano(Mano) == True:
-                        Respuesta = preguntaVariasOpciones("¿Jugada para " + NombresManos[i] +"? [P]edir [D]oblar [C]errar [S]eparar: ", "P", "D", "C", "S")
+                    if Analisis == True:
+                        if sePuedeSepararMano(Mano) == True:
+                            print("¿Jugada para " + NombresManos[i] +"? [P]edir [D]oblar [C]errar [S]eparar: ", end="")
+                        else:
+                            print("¿Jugada para " + NombresManos[i] +"? [P]edir [D]oblar [C]errar: ", end="")
+                        Respuesta = Estrategia.jugada(ManoCroupier[0], Mano)
+                        print(Respuesta)
+                        if Respuesta == "P":
+                            Respuesta = "A"
+                        elif Respuesta == "D":
+                            Respuesta = "B"
+                        elif Respuesta == "S":
+                            Respuesta = "D"
                     else:
-                        Respuesta = preguntaVariasOpciones("¿Jugada para " + NombresManos[i] + "? [P]edir [D]oblar [C]errar: ", "P", "D", "C", "")
+                        if sePuedeSepararMano(Mano) == True:
+                            Respuesta = preguntaVariasOpciones("¿Jugada para " + NombresManos[i] +"? [P]edir [D]oblar [C]errar [S]eparar: ", "P", "D", "C", "S")
+                        else:
+                            Respuesta = preguntaVariasOpciones("¿Jugada para " + NombresManos[i] + "? [P]edir [D]oblar [C]errar: ", "P", "D", "C", "")
                 
                     if Respuesta == "A" or Respuesta == "B":
                         Mano.append(Mazo.reparte())
-                        if Respuesta == "B":
+                        if Respuesta == "B" or Respuesta =="D":
                             ApuestaManos[i] += ApuestaManos[i]
+                            EstadoManos[i] = "CERRADA"
                         if valorMano(Mano) > 21:
                             EstadoManos[i] = "PASADA"
                     
@@ -151,17 +191,25 @@ def partida(Mazo: FichExterno.Mazo, ApuestaInic):
             for Estado in EstadoManos:
                 if Estado == "ABIERTA":
                     AlgunaManoAbierta = True
-                if Estado == "CERRADA":
+                elif Estado == "CERRADA":
                     AlgunaManoCerrada = True
-            
-            CroupierTermino = False
-            if AlgunaManoAbierta == True or AlgunaManoCerrada == True:
-                if valorMano(ManoCroupier) < 17:
-                    ManoCroupier.append(Mazo.reparte())
-            if valorMano(ManoCroupier) > 16:
-                CroupierTermino = True
-            representacionManos([ManoCroupier], ["Croupier"], [], [])
             representacionManos(ListaManos, NombresManos, EstadoManos, ApuestaManos)
+        if AlgunaManoCerrada == True:
+            print("TURNO DEL CROUPIER")
+            representacionManos([ManoCroupier], ["Croupier"], EstadoCroupier,[])
+            while CroupierTermino == False:
+                ManoCroupier.append(Mazo.reparte())
+                if valorMano(ManoCroupier) > 16 and valorMano(ManoCroupier) < 22:
+                    CroupierTermino = True
+                    EstadoCroupier = ["CERRADA"]
+                elif valorMano(ManoCroupier) > 21:
+                    CroupierTermino = True
+                    EstadoCroupier = ["PASADA"]                     
+                representacionManos([ManoCroupier], ["Croupier"], EstadoCroupier,[])
+        
+        print("FIN DE LA PARTIDA")
+        representacionManos([ManoCroupier], ["Croupier"], EstadoCroupier,[])
+        representacionManos(ListaManos, NombresManos, EstadoManos, ApuestaManos)
         
         DineroGanado = 0
         i = 0
@@ -204,7 +252,7 @@ def valorMano(Mano: list):
 
 
 
-def sePuedePasarMano(Mano: list):
+def sePuedeSepararMano(Mano: list):
     Pasable = False
     if len(Mano) == 2:
         if Mano[0].valor == Mano[1].valor:
@@ -285,7 +333,7 @@ def representacionManos(ListaManos: list, NombresManos: list, EstadoManos: list,
             print(str(ApuestaManos[i]).rjust(Margen - 1), end="")
             print("€", end="")
         else:
-            print("".rjust(Margen), end="")
+            print(EstadoManos[i].rjust(Margen), end="")
         for Carta in Mano:
             Carta.representarPalo()
         if i != len(ListaManos) - 1:
