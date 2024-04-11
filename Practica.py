@@ -166,7 +166,7 @@ def partida(Mazo: FichExterno.Mazo, ApuestaInic: int, Analisis: bool, Estrategia
                 
                     if Respuesta == "A" or Respuesta == "B":
                         Mano.append(Mazo.reparte())
-                        if Respuesta == "B" or Respuesta =="D":
+                        if Respuesta == "B":
                             ApuestaManos[i] += ApuestaManos[i]
                             EstadoManos[i] = "CERRADA"
                         if valorMano(Mano) > 21:
