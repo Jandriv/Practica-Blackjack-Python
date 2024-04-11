@@ -3,27 +3,57 @@
 import FichExterno
 
 class Carta(FichExterno.CartaBase):
+    """Clase que hereda de CartaBase, tiene funciones para representar sus propiedades
+    """
     def __init__(self, ind):
+        """Crea carta con indice ind
+
+        Args:
+            ind (int): Indice de la carta
+        """
         self.ind = ind
         
     def representarRank(self):
+        """Representa el valor(rank) de una carta (A, K, Q, J, 10, 9, 8, 7, 6, 5, 4, 3, 2) Ej. │  8│ 
+        """
         if self.Rank == "10":
             print("│ " + self.Rank + "│ ", end="")
         else:
             print("│  " + self.Rank + "│ ", end="")
     
     def representarPalo(self):
-        print("│" + self.Palo +"  │ ", end="")
+        """Representa el palo de una carta (♠,♣,♥,♦) Ej. │♠  │ con el color correspondiente, rojo o negro
+        """
+        Negro = '\033[30m'
+        Rojo = '\033[31m'
+        Blanco = '\033[97m'
+
+        if (self.PaloNum == 0 or self.PaloNum == 1):
+            print("│" + Negro + self.Palo + Blanco + "  │ ", end="")
+        else:
+            print("│" + Rojo + self.Palo + Blanco + "  │ ", end="")
     
     def info(self):
+        """Da la información sobre las propiedades de la carta, su indice, rank y valor
+        """
         print("Rank: " + self.Rank + "  Ind: " + str(self.ind) + "  Value: " + str(self.valor))
     
     @property
     def PaloNum(self):
+        """Representa en un numero el palo de la carta, los 13 primeros indices son el palo 0, los 13 siguientes el palo 1...
+
+        Returns:
+            (int): Entero que representa uno de los 4 palos de la baraja, sabiendo que solo hay 52 cartas por baraja
+        """
         return (self.ind // 13)
 
     @property
     def Palo(self):
+        """Es un simbolo a los numeros 0-3, siendo cada uno de ellos un palo distinto de la baraja(♠,♣,♥,♦)
+
+        Returns:
+            (string): Texto que contiene el simbolo del palo al que pertenece la carta 
+        """
         if self.PaloNum == 0:
             Simbolo = "♠"
         elif self.PaloNum == 1:
@@ -36,6 +66,11 @@ class Carta(FichExterno.CartaBase):
     
     @property
     def Rank(self):
+        """Es el valor(rank), no confundir con el valor al contar, de una carta (A, K, Q, J, 10, 9, 8, 7, 6, 5, 4, 3, 2)
+
+        Returns:
+            (string): Devuelve el valor en un string
+        """
         if (self.ind % 13 == 0):
             Rank = "A"
         elif (self.ind % 13 == 10):
@@ -102,6 +137,13 @@ def main():
     
     
 def repartoInicial(Mazo: FichExterno.Mazo):
+    """Da el primer reparto de una partida
+    Args:
+        Mazo (FichExterno.Mazo): El objeto mazo del que sacar las cartas
+
+    Returns:
+        (list): Contiene varios datos, un bool con valor True en caso de blackjack, la mano del croupier y la mano del jugador
+    """
     print("REPARTO INICIAL")
     ManoJugador = []
     ManoCroupier = []
@@ -117,6 +159,17 @@ def repartoInicial(Mazo: FichExterno.Mazo):
 
     
 def partida(Mazo: FichExterno.Mazo, ApuestaInic: int, Analisis: bool, Estrategia: FichExterno.Estrategia):
+    """Simula una partida de blackjacky sus apuetas correspondientes
+
+    Args:
+        Mazo (FichExterno.Mazo): Mazo del que se sacan las cartas
+        ApuestaInic (int): Apuesta inicial de la partida
+        Analisis (bool): Indica si el modo analisis esta activado o no
+        Estrategia (FichExterno.Estrategia): La estrategia a utilizar en caso de que el modo analisis este activado
+
+    Returns:
+        (int): El dinero ganado en esta partida
+    """
     EstadoManos = ["ABIERTA"]
     EstadoCroupier = ["ABIERTA"]
     ApuestaManos = [ApuestaInic]
@@ -238,6 +291,14 @@ def partida(Mazo: FichExterno.Mazo, ApuestaInic: int, Analisis: bool, Estrategia
         
 
 def valorMano(Mano: list):
+    """Dada una mano indica el valor de la mano teniendo en cuenta que los ases son 1 u 11 dependiendo del resto de valores
+
+    Args:
+        Mano (list): Mano a valorar
+
+    Returns:
+        (int): Valor de la mano
+    """
     Valor = 0
     NumAsesAltos = 0
     for Carta in Mano:
@@ -253,6 +314,14 @@ def valorMano(Mano: list):
 
 
 def sePuedeSepararMano(Mano: list):
+    """Indica si una mano dada es elegible para poder separarse
+
+    Args:
+        Mano (list): Mano a valorar
+
+    Returns:
+        (bool): Tiene el valor True si se puede separar la mano
+    """
     Pasable = False
     if len(Mano) == 2:
         if Mano[0].valor == Mano[1].valor:
@@ -295,6 +364,14 @@ def preguntaVariasOpciones(Pregunta, OpcionA, OpcionB, OpcionC, OpcionD):
     return Elegido
 
 def representacionManos(ListaManos: list, NombresManos: list, EstadoManos: list, ApuestaManos: list):
+    """Representa una mano en consola 
+
+    Args:
+        ListaManos (list): Lista de manos a representar, lista con un unico objeto en caso de una mano
+        NombresManos (list): Lista con los nombres asociados a cada mano en el mismo orden que en la lista de manos 
+        EstadoManos (list): Lista con los estados asociados a cada mano en el mismo orden que en la lista de manos
+        ApuestaManos (list): Lista con las apuestas asociadas a cada mano en el mismo orden que en la lista de manos 
+    """
     #Primera linea de la representacion con la siguiente forma: ManoX   ╭───╮ ╭───╮ ╭───╮  │ ManoX ╭───╮ ╭───╮ ╭───╮ │
     print("")
     i = 0
