@@ -285,7 +285,7 @@ def partida(Mazo: FichExterno.Mazo, ApuestaInic: int, Analisis: bool, Estrategia
             else:
                 print("* Croupier: " + str(valorMano(ManoCroupier)) + ", " + NombresManos[i] + ": " + str(valorMano(Mano)) + " -> " + str(DineroMano) +"")
             DineroGanado += DineroMano
-            i += 1                                    #CAMBIAR POR LA SUMA DE TODOS LOS NUMEROS DENTRO DE ApuestaManos: list
+            i += 1
         print("Resultado de la partida: " + str(int(DineroGanado)) + "€")
     return int(DineroGanado)
         
